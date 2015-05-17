@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<html xmlns:xlink="http://www.w3.org/1999/xlink">
 <meta charset="utf-8">
 <style>
 
@@ -24,7 +24,7 @@
 .label,
 .node--root,
 .node--leaf {
-  pointer-events: none;
+  pointer-events: all;
 }
 
 </style>
@@ -63,7 +63,19 @@ d3.json("flare.json", function(error, root) {
     .enter().append("circle")
       .attr("class", function(d) { return d.parent ? d.children ? "node" : "node node--leaf" : "node node--root"; })
       .style("fill", function(d) { return d.children ? color(d.depth) : null; })
-      .on("click", function(d) { if (focus !== d) zoom(d), d3.event.stopPropagation(); });
+      .on("click", clickFct)
+
+function clickFct(d,i) {
+    if (d3.select(this).classed("node--leaf")) {
+        window.open(d.url,"_self") //open URL here
+    } else {
+        if (focus !== d) 
+        {
+            zoom(d); 
+            d3.event.stopPropagation();
+        }
+    }
+    }
 
   var text = svg.selectAll("text")
       .data(nodes)
@@ -74,6 +86,30 @@ d3.json("flare.json", function(error, root) {
       .text(function(d) { return d.name; });
 
   var node = svg.selectAll("circle,text");
+
+  node.each(function(d){
+  var thisNode = d3.select(this);
+  if (!d.children) {
+    thisNode.append("a")
+        .attr("xlink:href", function(d) { return d.url; })
+        .append("text")
+            .attr("class","label")
+            .attr("dx", 8)
+            .attr("dy", 3)
+            .attr("text-anchor", "start")
+            .text(function(d) { return d.name; })
+            ;
+   } else {
+    thisNode.append("text")
+         .attr("class","label")
+        .attr("dx", -8)
+        .attr("dy", 3)
+        .attr("text-anchor", "end")
+        .text(function(d) { return d.name; });      
+     }
+
+    });
+
 
   d3.select("body")
       .style("background", color(-1))
